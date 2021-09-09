@@ -18,7 +18,7 @@ import platform
 import matplotlib.pyplot as plt
 
 import TS_fio
-from TS_settings import defaultSubDir, verbose, x_h, x_off, y_h, y_off
+from TS_settings import defaultSubDir, verbose, x_h, x_off, y_h, y_off, Filters, stacks, wavelength_range, transmission, figMain, axMain
 
 
 """
@@ -78,8 +78,8 @@ update refreshes the plotted graph to reflec any changes
 """
 
 def update(*args):
-    from TranStack import axMain, figMain, stacks
-    global Filters
+    global figMain
+    global axMain
     for stack in stacks:
         stack["line"].set_ydata(TS_fio.recalc(wavelength_range, Filters, stack["coeffs"]))
         stack["line"].set_label(stack["name"].text)
@@ -95,7 +95,7 @@ def update(*args):
 log - sets Y-Scale to logarithmic
 """
 def log(*args):
-    from TranStack import axMain
+    global axMain
     print("log")
     axMain.set_yscale('log')
     update()
@@ -105,7 +105,7 @@ def log(*args):
 lin - sets Y-Scale to linear
 """
 def lin(*args):
-    from TranStack import axMain
+    global axMain
     print("lin")
     axMain.set_yscale('linear')
     update()
@@ -115,8 +115,6 @@ def lin(*args):
 Saveline - Saves the line data as a csv named according to the stack name
 """
 def Saveline(event):
-    global stacks
-    global wavelength_range
     def oncanvas(stack):
         return(event.canvas==stack["fig"].canvas)
     def offcanvas(stack):
@@ -139,7 +137,6 @@ def Saveline(event):
 Remstack - deletes the line and gui for the stack.
 """
 def Remstack(event):
-    global stacks
     def oncanvas(stack):
         return(event.canvas==stack["fig"].canvas)
     def offcanvas(stack):
@@ -162,8 +159,7 @@ def Remstack(event):
 """
 addtack - adds a new line to the plot and opens the associated GUI
 """
-def addStack(*args):
-    from TranStack import stacks, axMain
+def addStack(*args):    
     numStack = len(stacks)
     stacks.append({})
     stacks[numStack] = {"buttons":[]}
