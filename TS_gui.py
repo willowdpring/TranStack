@@ -18,7 +18,7 @@ import platform
 import matplotlib.pyplot as plt
 
 import TS_fio
-from TS_settings import defaultSubDir, verbose, x_h, x_off, y_h, y_off, Filters, stacks, wavelength_range, transmission, figMain, axMain
+from TS_settings import defaultSubDir, verbose, x_h, x_off, y_h, y_off, Filters, stacks, wavelength_range, axMain, figMain
 
 
 """
@@ -78,8 +78,6 @@ update refreshes the plotted graph to reflec any changes
 """
 
 def update(*args):
-    global figMain
-    global axMain
     for stack in stacks:
         stack["line"].set_ydata(TS_fio.recalc(wavelength_range, Filters, stack["coeffs"]))
         stack["line"].set_label(stack["name"].text)
@@ -95,7 +93,6 @@ def update(*args):
 log - sets Y-Scale to logarithmic
 """
 def log(*args):
-    global axMain
     print("log")
     axMain.set_yscale('log')
     update()
@@ -105,29 +102,38 @@ def log(*args):
 lin - sets Y-Scale to linear
 """
 def lin(*args):
-    global axMain
     print("lin")
     axMain.set_yscale('linear')
     update()
     return()
 
+
+
 """
-Saveline - Saves the line data as a csv named according to the stack name
+isolateCanvas
 """
-def Saveline(event):
+def isolateCanvas(event):
     def oncanvas(stack):
         return(event.canvas==stack["fig"].canvas)
     def offcanvas(stack):
         return(event.canvas!=stack["fig"].canvas)
     try:
-        mystack = list(filter(oncanvas,stacks))[0]
+        myStack = list(filter(oncanvas,stacks))[0]
+        otherStacks = list(filter(oncanvas,stacks))
     except():
-        print("MAJOR ERROR button is not connected to a stack canvas \n I thought this an unreachable state and therefore cannot be trusted to advise!\n")
-        return()
-    name = mystack["name"]
+        print("MAJOR ERROR: This button is not connected to a stack canvas \n I thought this an unreachable state and therefore will not attempt to advise!\n")
+        return(-1)    
+    return(myStack,otherStacks)
+
+"""
+Saveline - Saves the line data as a csv named according to the stack name
+"""
+def Saveline(event):
+    myStack,otherStacks = isolateCanvas(event)
+    name = myStack["name"]
     if verbose:print("Saving csv data for {}".format(name.text))
 
-    data = np.transpose(mystack["line"].get_data())
+    data = np.transpose(myStack["line"].get_data())
 
     np.savetxt("{}.csv".format(name.text),data,delimiter=',',newline='\n',header='wavelength,transmission')
 
@@ -137,21 +143,12 @@ def Saveline(event):
 Remstack - deletes the line and gui for the stack.
 """
 def Remstack(event):
-    def oncanvas(stack):
-        return(event.canvas==stack["fig"].canvas)
-    def offcanvas(stack):
-        return(event.canvas!=stack["fig"].canvas)
-    try:
-        mystack = list(filter(oncanvas,stacks))[0]
-        stacks = list(filter(offcanvas,stacks))
-    except():
-        print("MAJOR ERROR button is not connected to a stack canvas \n I thought this an unreachable state and therefore cannot be trusted to advise!\n")
-        return()
-    name = mystack["name"]
+    myStack, otherStacks = isolateCanvas(event)
+    name = myStack["name"]
     if verbose:print("User Requested Close Stack:  {}".format(name.text))
-    plt.close(mystack["fig"])
-    mystack["line"].remove()
-    del(mystack)
+    plt.close(myStack["fig"])
+    myStack["line"].remove()
+    del(myStack)
     update()
     return()
 

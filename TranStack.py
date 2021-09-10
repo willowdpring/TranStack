@@ -11,11 +11,10 @@ Created on Fri Sep  3 10:22:41 2021
 """
 
 import os
-import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Button
 import TS_fio, TS_gui
-from TS_settings import verbose, wavelength_min, wavelength_max, axcolor, wavelength_range, transmission, Filters, stacks, figMain, axMain
+from TS_settings import verbose, axcolor, wavelength_range, Filters, figMain, axMain
 
 
 ####    MAIN    ####
