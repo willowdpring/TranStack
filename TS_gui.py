@@ -18,7 +18,7 @@ import platform
 import matplotlib.pyplot as plt
 
 import TS_fio
-from TS_settings import defaultSubDir, verbose, x_h, x_off, y_h, y_off, Filters, stacks, wavelength_range, axMain, figMain
+from TS_settings import defaultSubDir, verbose, x_h, x_off, y_off, Filters, stacks, wavelength_range, axMain, figMain, axcolor
 
 
 """
@@ -162,11 +162,7 @@ def addStack(*args):
     stacks[numStack] = {"buttons":[]}
     stacks[numStack].update({"coeffs":[Counter() for _ in Filters]})
 
-    axcolor = 'lightgoldenrodyellow'
-
     stackfig, stackax = plt.subplots()
-    listheight =  len(Filters)*y_h #+y_off*2
-    stackfig.set_figheight(listheight*5)
     plt.axis("off")
     plt.subplots_adjust(bottom=0.2)
     initial_text = "stack {}".format(numStack)
@@ -185,11 +181,13 @@ def addStack(*args):
 
     stacks[numStack].update({"fig":stackfig,"ax":stackax})
 
+    y_h = (0.85 - y_off * 2)/len(Filters) 
+    
     for ind, Filter in enumerate(Filters):
         #axTxt = plt.axes([x_off, y_off + 0.05*(1+ind), 0.08, 0.03],facecolor=axcolor)
         #stacks[numStack]["text"].append(axTxt.text("{}".format(Filter)))
-        axButMin=plt.axes([x_off, y_off + y_h*(1+ind), 0.09, 0.03], facecolor=axcolor)
-        axButPlus=plt.axes([x_off + x_h, y_off + 0.05*(1+ind), 0.06, 0.03], facecolor=axcolor)
+        axButMin=plt.axes([x_off, y_off + y_h*(ind), 0.09, 0.03], facecolor=axcolor)
+        axButPlus=plt.axes([x_off + x_h, y_off + y_h*(ind), 0.06, 0.03], facecolor=axcolor)
         stacks[numStack]["buttons"].append(Button(axButMin, label="remove [0]", image=None, color='0.85', hovercolor='0.95'))
         stacks[numStack]["buttons"][-1].label.set_x(0.05)
         stacks[numStack]["buttons"][-1].label.set_horizontalalignment('left')
