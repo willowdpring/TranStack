@@ -21,10 +21,16 @@ import TS_fio
 from TS_settings import defaultSubDir, verbose, x_h, x_off, y_off, Filters, stacks, wavelength_range, axMain, figMain, axcolor
 
 
-"""
-getFilDir - change the working directory to one containing the csv files desired by the user:
-"""
 def goToFilDir():
+    """
+    goToFilDir()
+    change the working directory to one containing the csv files desired by the user:
+
+    Returns
+    -------
+    None.
+
+    """
     if(platform.system()=="Windows") :
         import win32gui
         from win32com.shell import shell, shellcon
@@ -51,19 +57,19 @@ def goToFilDir():
             directory = str(input("enter the directory of the filter curve files"))
         if(not os.path.isdir(directory)):
             directory = os.path.join(os.getcwd(),defaultSubDir)
-    print("Switcheng To ", directory)
+    print("Switching To ", directory)
     os.chdir(directory)
 
 
 
 
 
-"""
+class Counter(widgets.DOMWidget):
+    """
     COUNTER : This class in a linkable iterator
     for tracking the number of a given filter in the stack
     and incrimenting and decrimenting it using linked matplotlib widgets
-"""
-class Counter(widgets.DOMWidget):
+    """
     value = 0
     def up(self,*args):
         self.value += 1
@@ -73,11 +79,20 @@ class Counter(widgets.DOMWidget):
         update()
 
 
-"""
-update refreshes the plotted graph to reflec any changes
-"""
-
 def update(*args):
+    """
+    update refreshes the plotted graph to reflect any changes
+
+    Parameters
+    ----------
+    *args : Event Data
+        DISCARDED
+
+    Returns
+    -------
+    None. - redraws Main canvas
+
+    """
     for stack in stacks:
         stack["line"].set_ydata(TS_fio.recalc(wavelength_range, Filters, stack["coeffs"]))
         stack["line"].set_label(stack["name"].text)
@@ -89,30 +104,68 @@ def update(*args):
     axMain.legend()
     figMain.canvas.draw_idle()
 
-"""
-log - sets Y-Scale to logarithmic
-"""
 def log(*args):
-    print("log")
+    """
+    log()
+    sets Y-Scale to logarithmic
+
+    Parameters
+    ----------
+    *args : Event Data
+        DISCARDED
+
+    Returns
+    -------
+    None. - calls update()
+
+    """
+    if verbose:    
+        print("setting y to logarithmic")
     axMain.set_yscale('log')
     update()
     return()
 
-"""
-lin - sets Y-Scale to linear
-"""
 def lin(*args):
-    print("lin")
+    """
+    lin()
+    sets Y-Scale to linear
+
+    Parameters
+    ----------
+    *args : Event Data
+        DISCARDED
+
+    Returns
+    -------
+    None. - calls update()
+
+    """
+    if verbose:    
+        print("setting y to linear")
     axMain.set_yscale('linear')
     update()
     return()
 
 
-
-"""
-isolateCanvas
-"""
 def isolateCanvas(event):
+    """
+    isolateCanvas()
+    returns the in group and out group of canvases assosciated with the event
+    i.e. identifies the originating canvas for an event so that the corresponding stack can be deleted/updated/saved/etc.. (interacted with uniquely) 
+    
+    Parameters
+    ----------
+    event : EVENT
+        an event originating from a user interaction on one of the matplotlib windows
+
+    Returns
+    -------
+    MyStack : LIST 
+        the ID for the canvas that originated the event
+    otherStacks : LIST
+        all stacks not assosciated with the event
+
+    """
     def oncanvas(stack):
         return(event.canvas==stack["fig"].canvas)
     def offcanvas(stack):
@@ -125,10 +178,24 @@ def isolateCanvas(event):
         return(-1)    
     return(myStack,otherStacks)
 
-"""
-Saveline - Saves the line data as a csv named according to the stack name
-"""
 def Saveline(event):
+    """
+    Saveline()
+    Saves the line data as a csv named according to the stack name
+    
+    TODO - add check if file exists and request overwrite permission
+
+
+    Parameters
+    ----------
+    event : EVENT
+        an event that triggers the save to file of a stack
+
+    Returns
+    -------
+    None. - saved stack to file
+
+    """
     myStack,otherStacks = isolateCanvas(event)
     name = myStack["name"]
     if verbose:print("Saving csv data for {}".format(name.text))
@@ -139,10 +206,21 @@ def Saveline(event):
 
     return()
 
-"""
-Remstack - deletes the line and gui for the stack.
-"""
 def Remstack(event):
+    """
+    Remstack()
+    deletes the line and gui for the stack.
+
+    Parameters
+    ----------
+    event : EVENT
+        an event that triggers the deletion of a stack
+
+    Returns
+    -------
+    None. - closes a window
+
+    """
     myStack, otherStacks = isolateCanvas(event)
     name = myStack["name"]
     if verbose:print("User Requested Close Stack:  {}".format(name.text))
@@ -153,10 +231,23 @@ def Remstack(event):
     return()
 
 
-"""
-addtack - adds a new line to the plot and opens the associated GUI
-"""
 def addStack(*args):    
+    """
+    addStack
+
+    adds a new line to the plot and opens the associated GUI
+
+    Parameters
+    ---------- 
+    *args : Event Data
+        DISCARDED
+        
+        
+    Returns
+    -------
+    None. - adds a line to main fig and opens a new stack gui
+
+    """
     numStack = len(stacks)
     stacks.append({})
     stacks[numStack] = {"buttons":[]}
