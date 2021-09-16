@@ -17,8 +17,84 @@ import ipywidgets as widgets
 import platform
 import matplotlib.pyplot as plt
 
+from threading import Thread
+
 import TS_fio
 from TS_settings import defaultSubDir, verbose, x_h, x_off, y_off, Filters, stacks, wavelength_range, axMain, figMain, axcolor
+from time import sleep
+
+    
+    
+    
+ 
+def Saveline(event):
+    """
+    Saveline()
+    Saves the line data as a csv named according to the stack name
+    
+    TODO - add check if file exists and request overwrite permission
+
+
+    Parameters
+    ----------
+    event : EVENT
+        an event that triggers the save to file of a stack
+
+    Returns
+    -------
+    None. - saved stack to file
+
+    """
+    def accept_uin(text):
+        global figWarn
+        global newName
+        plt.close(figWarn)
+        newName = text
+        return()
+
+    
+    myStack,otherStacks = isolateCanvas(event)
+    name = myStack["name"].text
+    if verbose:print("Saving csv data for {} \n".format(name))
+    
+    fullFilePath = "{}\{}.csv".format(os.getcwd(),name)
+    
+    if verbose:print("Checking for {} \n".format(fullFilePath))
+    
+    if os.path.exists(fullFilePath):
+        fex_str = " ' {}.csv '  already exists! would you like to change the name?".format(name)
+        if verbose:print("FILE EXISTS")
+        newName = ""
+        
+        figWarn, fexbox = plt.subplots(figsize=(8,2))
+        figWarn.show() 
+        plt.title(fex_str)
+        plt.axis("off")
+        box = TextBox(fexbox, "Save As: ", initial="")
+        box.on_submit(accept_uin)
+        
+        time = 0
+        while(newName=="")and(time<1000):
+            if verbose:print("waiting for new name")
+            time+=1
+            sleep(0.1)
+            if verbose and time % 100 == 0 :print("tick\n")
+        
+        if newName!="":
+            data = np.transpose(myStack["line"].get_data())
+            np.savetxt("{}.csv".format(newName),data,delimiter=',',newline='\n',header='wavelength,transmission')
+        else:
+            print("__WARN__ \n Saving FAILED due to a conflicting file user permission is required to overwrite")
+        plt.close(figWarn)
+        return()
+        
+        
+    else:
+        if verbose: print("creating new file")
+        data = np.transpose(myStack["line"].get_data())
+        np.savetxt("{}.csv".format(name),data,delimiter=',',newline='\n',header='wavelength,transmission')
+    
+    return()       
 
 
 """
@@ -125,6 +201,7 @@ def isolateCanvas(event):
         return(-1)    
     return(myStack,otherStacks)
 
+<<<<<<< Updated upstream
 """
 Saveline - Saves the line data as a csv named according to the stack name
 """
@@ -138,6 +215,8 @@ def Saveline(event):
     np.savetxt("{}.csv".format(name.text),data,delimiter=',',newline='\n',header='wavelength,transmission')
 
     return()
+=======
+>>>>>>> Stashed changes
 
 """
 Remstack - deletes the line and gui for the stack.

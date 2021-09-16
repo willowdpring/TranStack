@@ -18,10 +18,13 @@ from TS_settings import verbose
 
 
 
+<<<<<<< Updated upstream
 
 """
 Optical Curve generates an interpolator from a csv file of wavelength transimission values
 """
+=======
+>>>>>>> Stashed changes
 def optical_curve(file):
     data = pd.read_csv(file, delimiter=',')
     data.columns = data.columns.str.strip()
